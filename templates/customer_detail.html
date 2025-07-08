@@ -1,0 +1,219 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ customer.last_name }} {{ customer.first_name }} - 顧客管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-circle"></i> 顧客情報
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="customer-info-label">名前</div>
+                <div class="customer-info-value">
+                    <strong>{{ customer.last_name }} {{ customer.first_name }}</strong>
+                </div>
+
+                <div class="customer-info-label">会社名</div>
+                <div class="customer-info-value">
+                    {% if customer.company_name %}
+                        <i class="bi bi-building"></i> 
+                        <a href="/company/{{ customer.company_id }}">{{ customer.company_name }}</a>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+
+                <div class="customer-info-label">メールアドレス</div>
+                <div class="customer-info-value">
+                    {% if customer.email %}
+                        <i class="bi bi-envelope"></i> {{ customer.email }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+
+                <div class="customer-info-label">電話番号</div>
+                <div class="customer-info-value">
+                    {% if customer.phone %}
+                        <i class="bi bi-telephone"></i> {{ customer.phone }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+
+                <div class="customer-info-label">LINE WORKS連携</div>
+                <div class="customer-info-value">
+                    {% if customer.line_user_id and activities %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> 連携済み（稼働中）
+                        </span>
+                        <div class="mt-1">
+                            <small class="text-muted">ID: {{ customer.line_user_id }}</small>
+                        </div>
+                    {% elif customer.line_user_id %}
+                        <span class="badge bg-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 設定済み（未確認）
+                        </span>
+                        <div class="mt-1">
+                            <small class="text-muted">ID: {{ customer.line_user_id }}</small>
+                        </div>
+                    {% else %}
+                        <span class="badge bg-secondary">未設定</span>
+                    {% endif %}
+                </div>
+
+                <div class="mt-3">
+                    <a href="/customer/{{ customer.id }}/edit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil"></i> 編集
+                    </a>
+                    {% if customer.line_user_id %}
+                    <a href="/send-message/{{ customer.id }}" class="btn btn-success btn-sm">
+                        <i class="bi bi-send"></i> メッセージ送信
+                    </a>
+                    {% endif %}
+                    <a href="/customers" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> 一覧に戻る
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- メッセージ履歴 -->
+        <div class="card {% if customer.line_user_id %}mb-3{% endif %}">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-chat-dots"></i> メッセージ履歴
+                </h5>
+            </div>
+            <div class="card-body chat-container" id="chatContainer">
+                {% if activities %}
+                    {% for activity in activities %}
+                    {% if activity.message.startswith('[送信]') %}
+                    <!-- 送信メッセージ（右側） -->
+                    <div class="message-row sent">
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                {{ activity.message[4:] }}
+                            </div>
+                            <div class="message-info">
+                                <span class="message-time">{{ activity.timestamp[:16] if activity.timestamp else '' }}</span>
+                                <form method="POST" action="/activity/{{ activity.id }}/delete" style="display: inline;" onsubmit="return confirmDelete()">
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2" title="削除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- 受信メッセージ（左側） -->
+                    <div class="message-row received">
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                {{ activity.message }}
+                            </div>
+                            <div class="message-info">
+                                <span class="message-time">{{ activity.timestamp[:16] if activity.timestamp else '' }}</span>
+                                <form method="POST" action="/activity/{{ activity.id }}/delete" style="display: inline;" onsubmit="return confirmDelete()">
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2" title="削除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-2">メッセージ履歴はまだありません</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- メッセージ送信フォーム -->
+        {% if customer.line_user_id %}
+        <div class="card">
+            <div class="card-body">
+                <form id="sendMessageForm" onsubmit="sendMessage(event)" class="d-flex gap-2">
+                    <textarea class="form-control" id="messageText" rows="2" placeholder="メッセージを入力..." required style="resize: none;"></textarea>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+                <div id="messageResult" class="mt-2"></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    return confirm('この活動履歴を削除してもよろしいですか？');
+}
+
+// ページ読み込み時に最新のメッセージまでスクロール
+window.addEventListener('load', function() {
+    scrollToBottom();
+});
+
+function scrollToBottom() {
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+}
+
+function sendMessage(event) {
+    event.preventDefault();
+    
+    const messageText = document.getElementById('messageText').value;
+    const resultDiv = document.getElementById('messageResult');
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    
+    // ボタンを無効化
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+    // メッセージ送信
+    fetch('/customer/{{ customer.id }}/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'message=' + encodeURIComponent(messageText)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('messageText').value = '';
+            // 成功時は即座にリロード
+            location.reload();
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger alert-dismissible fade show py-2" role="alert">' +
+                data.message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML = '<div class="alert alert-danger alert-dismissible fade show py-2" role="alert">' +
+            'エラーが発生しました: ' + error +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+    })
+    .finally(() => {
+        // ボタンを有効化
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+    });
+}
+</script>
+{% endblock %}

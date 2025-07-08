@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block title %}顧客一覧 - 顧客管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-people"></i> 顧客一覧
+                </h5>
+                <a href="/customer/new" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> 新規作成
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>名前</th>
+                                <th>会社名</th>
+                                <th>メールアドレス</th>
+                                <th>電話番号</th>
+                                <th>LINE USER ID</th>
+                                <th>アクション</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                            <tr>
+                                <td>
+                                    <a href="/customer/{{ customer.id }}" class="text-decoration-none">
+                                        {{ customer.last_name }} {{ customer.first_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if customer.company_name %}
+                                    <a href="/company/{{ customer.company_id }}" class="text-decoration-none">
+                                        {{ customer.company_name }}
+                                    </a>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>{{ customer.email or '-' }}</td>
+                                <td>{{ customer.phone or '-' }}</td>
+                                <td>
+                                    {% if customer.line_user_id and customer.has_activities %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> 連携済み（稼働中）
+                                        </span>
+                                    {% elif customer.line_user_id %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-exclamation-triangle"></i> 設定済み（未確認）
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">未設定</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/customer/{{ customer.id }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> 詳細
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    顧客データがありません
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

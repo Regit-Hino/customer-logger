@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}顧客編集 - {{ customer.last_name }} {{ customer.first_name }} - 顧客管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-square"></i> 顧客編集
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/customer/{{ customer.id }}/edit">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">姓 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ customer.last_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ customer.first_name }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company_id" class="form-label">会社</label>
+                        <select class="form-select" id="company_id" name="company_id">
+                            <option value="">選択してください</option>
+                            {% for company in companies %}
+                            <option value="{{ company.id }}" {% if customer.company_id == company.id %}selected{% endif %}>{{ company.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">メールアドレス</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ customer.email or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">電話番号</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ customer.phone or '' }}" placeholder="090-0000-0000">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="line_user_id" class="form-label">LINE WORKS ユーザーID</label>
+                        <input type="text" class="form-control" id="line_user_id" name="line_user_id" value="{{ customer.line_user_id or '' }}" placeholder="U12345678">
+                        <div class="form-text">LINE WORKSと連携する場合は、ユーザーIDを入力してください</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 更新
+                        </button>
+                        <a href="/customer/{{ customer.id }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> キャンセル
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: customer-logger
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: LINE_WORKS_BOT_ID
+        value: "10368813"
+      - key: LINE_WORKS_CLIENT_ID
+        value: "ln7VvQ1rBt_msW7j29qs"
+      - key: LINE_WORKS_CLIENT_SECRET
+        value: "UWD9pXXWd2"
+      - key: LINE_WORKS_DOMAIN_ID
+        value: "400794821"
+      - key: LINE_WORKS_SERVICE_ACCOUNT
+        value: "8bvy9.serviceaccount@regit-technology"
+      - key: LINE_WORKS_PRIVATE_KEY_BASE64
+        sync: false
+      - key: DATABASE_PATH
+        value: "/tmp/database.db"

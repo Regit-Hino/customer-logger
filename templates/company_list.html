@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}会社一覧 - 顧客管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-building"></i> 会社一覧
+                </h5>
+                <a href="/company/new" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> 新規会社登録
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>会社名</th>
+                                <th>所在地</th>
+                                <th>電話番号</th>
+                                <th>ウェブサイト</th>
+                                <th>所属顧客数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in companies %}
+                            <tr>
+                                <td>
+                                    <a href="/company/{{ company.id }}">
+                                        {{ company.name }}
+                                    </a>
+                                </td>
+                                <td>{{ company.address or '-' }}</td>
+                                <td>{{ company.phone or '-' }}</td>
+                                <td>
+                                    {% if company.website %}
+                                    <a href="{{ company.website }}" target="_blank">
+                                        <i class="bi bi-link-45deg"></i> {{ company.website }}
+                                    </a>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ company.customer_count }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/company/{{ company.id }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i> 詳細
+                                        </a>
+                                        <a href="/company/{{ company.id }}/edit" class="btn btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i> 編集
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if not companies %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-building" style="font-size: 2rem;"></i>
+                        <p class="mt-2">会社が登録されていません</p>
+                        <a href="/company/new" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> 最初の会社を登録
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
