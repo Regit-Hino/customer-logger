@@ -1,3 +1,5 @@
+# render.yaml  (Blueprint v2)
+
 databases:
   - name: customer-logger-db
     plan: free
@@ -5,26 +7,34 @@ databases:
 services:
   - type: web
     name: customer-logger
-    env: python
+
+    runtime: python
+    runtimeVersion: 3.11    # psycopg2 が公式サポートする最新版
+
     plan: free
+
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
+
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: customer-logger-db
           property: connectionString
+
       - key: FLASK_SECRET_KEY
         generateValue: true
+
+      # === LINE WORKS 用 ===
       - key: LINE_WORKS_BOT_ID
         value: "10368813"
       - key: LINE_WORKS_CLIENT_ID
-        value: "ln7VvQ1rBt_msW7j29qs"
+        value: "ln7vVq1rBt_msw7j29gs"
       - key: LINE_WORKS_CLIENT_SECRET
-        value: "UWD9pXXWd2"
+        value: "UwD9pXXWd2"
       - key: LINE_WORKS_DOMAIN_ID
-        value: "400794821"
+        value: "A00794821"
       - key: LINE_WORKS_SERVICE_ACCOUNT
         value: "8bvy9.serviceaccount@regit-technology"
-      - key: LINE_WORKS_PRIVATE_KEY_BASE64
+      - key: LINE_WORKS_PRIVATE_KEY_BASE64   # ダッシュボードで手入力するなら sync:false
         sync: false
