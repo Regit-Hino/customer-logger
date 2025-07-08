@@ -9,7 +9,6 @@ services:
     name: customer-logger
 
     runtime: python
-    runtimeVersion: 3.11    # psycopg2 が公式サポートする最新版
 
     plan: free
 
