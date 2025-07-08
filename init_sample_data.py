@@ -1,8 +1,14 @@
-import sqlite3
 from datetime import datetime, timedelta
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from database import db
 
 def init_sample_data():
-    conn = sqlite3.connect('database.db')
+    # データベース初期化
+    db.init_db()
+    
+    conn = db.get_connection()
     cursor = conn.cursor()
     
     # 会社データの挿入

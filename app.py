@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-import sqlite3
 from datetime import datetime
 import json
 import requests
 import os
 import base64
+from db_adapter import db_adapter
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')  # flash messages用
@@ -24,58 +24,15 @@ LINE_WORKS_CONFIG = {
     'private_key_file': 'private.key'
 }
 
+# データベースアダプターを使用
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    # 互換性のため残すが、基本的にはdb_adapterを直接使う
+    return db_adapter.get_connection()
 
 def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # 会社テーブルの作成
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS companies (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            address TEXT,
-            phone TEXT,
-            website TEXT
-        )
-    ''')
-    
-    # 顧客テーブルの作成（company_idカラムを追加）
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT NOT NULL,
-            last_name TEXT NOT NULL,
-            email TEXT,
-            phone TEXT,
-            line_user_id TEXT,
-            company_id INTEGER,
-            FOREIGN KEY (company_id) REFERENCES companies (id)
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS activities (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER NOT NULL,
-            message TEXT NOT NULL,
-            timestamp DATETIME NOT NULL,
-            FOREIGN KEY (customer_id) REFERENCES customers (id)
-        )
-    ''')
-    
-    # 既存のcustomersテーブルにcompany_idカラムが存在しない場合は追加
-    cursor.execute("PRAGMA table_info(customers)")
-    columns = [column[1] for column in cursor.fetchall()]
-    if 'company_id' not in columns:
-        cursor.execute('ALTER TABLE customers ADD COLUMN company_id INTEGER REFERENCES companies(id)')
-    
-    conn.commit()
-    conn.close()
+    # データベース初期化
+    from database import db
+    db.init_db()
 
 @app.route('/')
 def index():
